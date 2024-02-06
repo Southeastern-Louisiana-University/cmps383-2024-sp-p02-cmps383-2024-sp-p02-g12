@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace Selu383.SP24.Api.Data;
 
@@ -18,4 +19,7 @@ public class DataContext : DbContext
 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(DataContext).Assembly);
     }
+
+    public virtual DbSet<IdentityUser> Users { get; set; }
+    public virtual DbSet<IdentityRole> Roles { get; set; }
 }
