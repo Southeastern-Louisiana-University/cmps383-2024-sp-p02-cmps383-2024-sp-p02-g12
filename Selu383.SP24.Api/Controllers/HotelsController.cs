@@ -1,7 +1,9 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Selu383.SP24.Api.Data;
 using Selu383.SP24.Api.Features.Hotels;
+using Selu383.SP24.Api.Features.Users;
 
 namespace Selu383.SP24.Api.Controllers;
 
@@ -23,7 +25,7 @@ public class HotelsController : ControllerBase
     {
         return GetHotelDtos(hotels);
     }
-
+  
     [HttpGet]
     [Route("{id}")]
     public ActionResult<HotelDto> GetHotelById(int id)
@@ -38,8 +40,14 @@ public class HotelsController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = RoleNames.Admin)]
     public ActionResult<HotelDto> CreateHotel(HotelDto dto)
     {
+        if (!User.Identity.IsAuthenticated) 
+        {
+            return Unauthorized();
+        }
+
         if (IsInvalid(dto))
         {
             return BadRequest();
@@ -61,8 +69,14 @@ public class HotelsController : ControllerBase
 
     [HttpPut]
     [Route("{id}")]
+    [Authorize]
     public ActionResult<HotelDto> UpdateHotel(int id, HotelDto dto)
     {
+        if (!User.Identity.IsAuthenticated)
+        {
+            return Unauthorized();
+        }
+
         if (IsInvalid(dto))
         {
             return BadRequest();
