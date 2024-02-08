@@ -27,7 +27,9 @@ namespace Selu383.SP24.Api.Controllers
             {
                 UserName = dto.UserName,
             };
+
             var createResult = await userManager.CreateAsync(newUser, dto.Password);
+
             if (!createResult.Succeeded) 
             {
                 return BadRequest();

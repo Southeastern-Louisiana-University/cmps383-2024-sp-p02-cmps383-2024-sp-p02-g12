@@ -42,23 +42,28 @@ using (var scope = app.Services.CreateScope())
 {
     await SeedHelper.MigrateAndSeed(scope.ServiceProvider);
 
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
     var db = scope.ServiceProvider.GetRequiredService<DataContext>();
+
+    var bob = await userManager.FindByNameAsync("bob");
+    var bobId = bob.Id;
     var hotels = db.Set<Hotel>();
 
-    if (!await hotels.AnyAsync())
+   /* if (!await hotels.AnyAsync()) 
     {
+
         for (int i = 0; i < 6; i++)
         {
             db.Set<Hotel>()
                 .Add(new Hotel
                 {
                     Name = "Hammond " + i,
-                    Address = "1234 Place st"
+                    Address = "1234 Place st",
                 });
         }
 
         await db.SaveChangesAsync();
-    }
+    } */
 }
 
 // Configure the HTTP request pipeline.

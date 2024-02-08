@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Selu383.SP24.Api.Features.Hotels;
 using Selu383.SP24.Api.Features.Users;
 using System.Security.Claims;
 
@@ -15,6 +16,23 @@ namespace Selu383.SP24.Api.Data
 
             await AddRoles(serviceProvider);
             await AddUsers(serviceProvider);
+
+            var hotels = dataContext.Set<Hotel>();
+
+            if (!await hotels.AnyAsync()) 
+            {
+                for (int i = 0; i < 6; i++) 
+                {
+                    dataContext.Set<Hotel>()
+                        .Add(new Hotel
+                        {
+                            Name = "Hammond " + i,
+                            Address = "1234 Place st",
+                        });
+                }
+
+                await dataContext.SaveChangesAsync();
+            }
         }
 
         private static async Task AddUsers(IServiceProvider serviceProvider) 
