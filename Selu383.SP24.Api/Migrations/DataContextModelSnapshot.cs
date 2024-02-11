@@ -134,7 +134,7 @@ namespace Selu383.SP24.Api.Migrations
 
                     b.HasIndex("ManagerId");
 
-                    b.ToTable("Hotel");
+                    b.ToTable("Hotel", (string)null);
                 });
 
             modelBuilder.Entity("Selu383.SP24.Api.Features.Users.Role", b =>

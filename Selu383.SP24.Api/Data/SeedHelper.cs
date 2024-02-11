@@ -58,7 +58,6 @@ namespace Selu383.SP24.Api.Data
             var bob = new User
             {
                 UserName = "bob",
-              //  ManagerId = 1
             };
 
             await userManager.CreateAsync(bob, defaultPass);
@@ -67,7 +66,6 @@ namespace Selu383.SP24.Api.Data
             var sue = new User
             {
                 UserName = "sue",
-               // ManagerId = null
             };
 
             await userManager.CreateAsync(sue, defaultPass);

@@ -10,7 +10,6 @@ public class Hotel
 
     public string Address { get; set; } = string.Empty;
 
-   // public int? ManagerId {get; set;}
-
+    public int? ManagerId { get; set; }
     public virtual User? Manager { get; set; }
 }

@@ -45,10 +45,10 @@ public class HotelsController : ControllerBase
     [Authorize(Roles = RoleNames.Admin)]
     public ActionResult<HotelDto> CreateHotel(HotelDto dto)
     {
-       /* if (!User.Identity.IsAuthenticated) 
+        if (!User.Identity.IsAuthenticated) 
         {
             return Unauthorized();
-        } */
+        } 
 
         if (IsInvalid(dto))
         {
@@ -71,32 +71,35 @@ public class HotelsController : ControllerBase
         return CreatedAtAction(nameof(GetHotelById), new { id = dto.Id }, dto);
     }
 
+
     [HttpPut]
     [Route("{id}")]
     [Authorize]
     public ActionResult<HotelDto> UpdateHotel(int id, HotelDto dto)
     {
-
         if (IsInvalid(dto))
         {
             return BadRequest();
         }
 
         var hotel = hotels.FirstOrDefault(x => x.Id == id);
-        var userId = GetUserId(User);
         if (hotel == null)
         {
             return NotFound();
         }
 
-        if (!User.IsInRole(RoleNames.Admin) && hotel.Manager.Id != userId) 
+        if (!User.IsInRole(RoleNames.Admin) && GetUserId(User) != hotel.ManagerId)
         {
             return Forbid();
         }
 
         hotel.Name = dto.Name;
         hotel.Address = dto.Address;
-        hotel.Manager = dataContext.Users.FirstOrDefault(x => x.Id == dto.ManagerId);
+
+        if (User.IsInRole(RoleNames.Admin))
+        {
+            hotel.ManagerId = dto.ManagerId;
+        }
 
         dataContext.SaveChanges();
 
@@ -110,6 +113,11 @@ public class HotelsController : ControllerBase
     [Authorize(Roles = RoleNames.Admin )]
     public ActionResult DeleteHotel(int id)
     {
+        if (!User.Identity.IsAuthenticated) 
+        {
+            return Unauthorized();
+        } 
+
         var hotel = hotels.FirstOrDefault(x => x.Id == id);
         if (hotel == null)
         {
@@ -138,6 +146,7 @@ public class HotelsController : ControllerBase
                 Id = x.Id,
                 Name = x.Name,
                 Address = x.Address,
+                ManagerId = x.Manager.Id
             });
     }
 
