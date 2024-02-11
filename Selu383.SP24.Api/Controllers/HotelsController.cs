@@ -1,7 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Selu383.SP24.Api.Data;
 using Selu383.SP24.Api.Features.Hotels;
+using Selu383.SP24.Api.Features.Users;
+using System.Runtime.CompilerServices;
+using System.Security.Claims;
 
 namespace Selu383.SP24.Api.Controllers;
 
@@ -23,7 +27,7 @@ public class HotelsController : ControllerBase
     {
         return GetHotelDtos(hotels);
     }
-
+  
     [HttpGet]
     [Route("{id}")]
     public ActionResult<HotelDto> GetHotelById(int id)
@@ -38,8 +42,14 @@ public class HotelsController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = RoleNames.Admin)]
     public ActionResult<HotelDto> CreateHotel(HotelDto dto)
     {
+        if (!User.Identity.IsAuthenticated) 
+        {
+            return Unauthorized();
+        } 
+
         if (IsInvalid(dto))
         {
             return BadRequest();
@@ -49,6 +59,8 @@ public class HotelsController : ControllerBase
         {
             Name = dto.Name,
             Address = dto.Address,
+            Manager = dataContext.Users.FirstOrDefault(x => x.Id == dto.ManagerId)
+
         };
         hotels.Add(hotel);
 
@@ -59,8 +71,10 @@ public class HotelsController : ControllerBase
         return CreatedAtAction(nameof(GetHotelById), new { id = dto.Id }, dto);
     }
 
+
     [HttpPut]
     [Route("{id}")]
+    [Authorize]
     public ActionResult<HotelDto> UpdateHotel(int id, HotelDto dto)
     {
         if (IsInvalid(dto))
@@ -74,8 +88,18 @@ public class HotelsController : ControllerBase
             return NotFound();
         }
 
+        if (!User.IsInRole(RoleNames.Admin) && GetUserId(User) != hotel.ManagerId)
+        {
+            return Forbid();
+        }
+
         hotel.Name = dto.Name;
         hotel.Address = dto.Address;
+
+        if (User.IsInRole(RoleNames.Admin))
+        {
+            hotel.ManagerId = dto.ManagerId;
+        }
 
         dataContext.SaveChanges();
 
@@ -86,8 +110,14 @@ public class HotelsController : ControllerBase
 
     [HttpDelete]
     [Route("{id}")]
+    [Authorize(Roles = RoleNames.Admin )]
     public ActionResult DeleteHotel(int id)
     {
+        if (!User.Identity.IsAuthenticated) 
+        {
+            return Unauthorized();
+        } 
+
         var hotel = hotels.FirstOrDefault(x => x.Id == id);
         if (hotel == null)
         {
@@ -116,6 +146,19 @@ public class HotelsController : ControllerBase
                 Id = x.Id,
                 Name = x.Name,
                 Address = x.Address,
+                ManagerId = x.Manager.Id
             });
+    }
+
+    private int? GetUserId(ClaimsPrincipal claimsPrincipal) 
+    {
+        var userId = claimsPrincipal.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (userId == null)
+        {
+            return null;
+        }
+
+        return int.Parse(userId);
     }
 }
